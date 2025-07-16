@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Video Capture & Send Snapshot via Email</title>
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <link rel="stylesheet" href="vedio_gmail_css.css">
+  <style>
+    video, canvas { width: 300px; height: auto; border: 1px solid #ccc; }
+    input, textarea, button { margin: 5px 0; display: block; width: 100%; padding: 8px; }
+    #controls { margin-top: 15px; }
+  </style>
+</head>
+<body>
+
+<h2>🎥 Live Webcam</h2>
+<video id="video" autoplay></video>
+<canvas id="canvas" style="display:none;"></canvas>
+
+<div id="controls">
+  <button onclick="startCamera()">▶️ Start Camera</button>
+  <button onclick="stopCamera()">⛔ Stop Camera</button>
+</div>
+
+<h3>📧 Send Snapshot via Email</h3>
+<form id="emailForm" onsubmit="sendSnapshot(event)">
+  <input type="text" id="from_name" placeholder="Sender Name" required>
+  <input type="email" id="to_email" placeholder="Recipient Email" required>
+  <textarea id="message" placeholder="Your message..." required></textarea>
+  <button type="submit">📸 Capture Snapshot & Send</button>
+</form>
+
+<script>
+  let video = document.getElementById('video');
+  let stream = null;
+
+  // Initialize EmailJS
+  (function() {
+    emailjs.init("1GFa_C5Z3AYqQT2-M"); // 🔁 Replace with your EmailJS public key
+  })();
+
+  // Start camera
+  function startCamera() {
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(s => {
+        stream = s;
+        video.srcObject = stream;
+      })
+      .catch(error => {
+        alert("Camera access denied: " + error);
+      });
+  }
+
+  // Stop camera
+  function stopCamera() {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      video.srcObject = null;
+    }
+  }
+
+  // Capture and send
+  function sendSnapshot(event) {
+    event.preventDefault();
+
+    // Get input values
+    const fromName = document.getElementById('from_name').value;
+    const toEmail = document.getElementById('to_email').value;
+    const msg = document.getElementById('message').value;
+
+    // Capture snapshot
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const imageData = canvas.toDataURL('image/png');
+
+    // Send email
+    emailjs.send("service_4wspy19", "template_sh7626d", {
+      from_name: fromName,
+      to_email: toEmail,
+      message: msg,
+      image_base64: imageData
+    }).then(
+      function(response) {
+        alert("✅ Email sent successfully!");
+      },
+      function(error) {
+        alert("❌ Failed to send email: " + error.text);
+      }
+    );
+  }
+</script>
+
+</body>
+</html>

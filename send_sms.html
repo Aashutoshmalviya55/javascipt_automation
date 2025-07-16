@@ -1,0 +1,32 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Send SMS</title>
+</head>
+<body>
+  <h2>Send SMS</h2>
+  <form id="smsForm">
+    <input type="text" id="to" placeholder="Enter phone number" required />
+    <input type="text" id="message" placeholder="Enter message" required />
+    <button type="submit">Send</button>
+  </form>
+
+  <script>
+    document.getElementById("smsForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const to = document.getElementById("to").value;
+      const message = document.getElementById("message").value;
+
+      const response = await fetch("/send-sms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ to, message })
+      });
+
+      const result = await response.json();
+      alert(result.status);
+    });
+  </script>
+</body>
+</html>
